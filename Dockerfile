@@ -1,7 +1,6 @@
-FROM debian:jessie
+FROM alpine as builder
 
-RUN apt-get update \
-    && apt-get -y install ca-certificates unzip pv build-essential xz-utils wget
+RUN apk add --update wget tar g++ make xz perl
 
 # From https://github.com/atdt/advcpmv
 RUN cd /root && wget http://ftp.gnu.org/gnu/coreutils/coreutils-8.25.tar.xz \
@@ -10,9 +9,11 @@ RUN cd /root && wget http://ftp.gnu.org/gnu/coreutils/coreutils-8.25.tar.xz \
     && wget https://raw.githubusercontent.com/atdt/advcpmv/master/advcpmv-0.7-8.25.patch \
     && patch -p1 -i advcpmv-0.7-8.25.patch \
     && FORCE_UNSAFE_CONFIGURE=1 ./configure \
-    && make \
-    && mv ./src/cp /usr/local/bin/cpg \
-    && mv ./src/mv /usr/local/bin/mvg
+    && make
 
-RUN apt-get purge -y --auto-remove ca-certificates wget build-essential \
-    && rm -rf /var/lib/apt/lists/*
+
+FROM alpine
+
+RUN apk add --update --no-cache tar unzip pv xz
+COPY --from=builder /root/coreutils-8.25/src/cp /usr/local/bin/cpg
+COPY --from=builder /root/coreutils-8.25/src/mv /usr/local/bin/mvg
