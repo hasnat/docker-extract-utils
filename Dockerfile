@@ -14,6 +14,6 @@ RUN cd /root && wget http://ftp.gnu.org/gnu/coreutils/coreutils-8.25.tar.xz \
 
 FROM alpine
 
-RUN apk add --update --no-cache tar unzip pv xz
+RUN apk add --update --no-cache tar unzip pv xz libarchive-tools
 COPY --from=builder /root/coreutils-8.25/src/cp /usr/local/bin/cpg
 COPY --from=builder /root/coreutils-8.25/src/mv /usr/local/bin/mvg
